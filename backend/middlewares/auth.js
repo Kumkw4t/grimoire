@@ -1,8 +1,8 @@
 const jwt = require("jsonwebtoken");
 
 function authentification (req,res,next) {
+
 	try {
-		console.log(req.headers.authorization);
 		const token = req.headers.authorization.split(" ")[1];
 		const decodedToken = jwt.verify(token, "SECRET_CRYPT_KEY");
 		const userId = decodedToken.userId;

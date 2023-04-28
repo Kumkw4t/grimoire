@@ -1,37 +1,14 @@
 const Book = require("../models/book");
+const fs = require("fs");
+const path = require("path");
 
 exports.getAllBooks = (req,res,next) => {
 	Book.find()
 		.then( things => res.status(200).json(things))
 		.catch( error => res.status(400).json({error}));
-
-	// const stuff = [
-	// 	{
-	// 		userId: 'oeihfzeoi',
-	// 		title: 'Livre1',
-	// 		author: 'Michel Michel',
-	// 		imageUrl: 'https://cdn.pixabay.com/photo/2020/03/15/13/49/temple-4933682_960_720.jpg',
-	// 		year: 1993,
-	// 		genre: 'thriller',
-	// 		rating: [{userId: 'ohdsgh',grade: 3}],
-	// 		averageRating: 4
-	// 	},
-	// 	{
-	// 		userId: 'oeifgsdgr',
-	// 		title: 'Livre 2',
-	// 		author: 'Truc Tric',
-	// 		imageUrl: 'https://cdn.pixabay.com/photo/2019/07/21/13/11/portrait-4352745_960_720.jpg',
-	// 		year: 2004,
-	// 		genre: 'drame',
-	// 		rating: [{userId: 'ohgoieoh',grade: 3}],
-	// 		averageRating: 5
-	// 	},
-	// ];
-	// res.status(200).json(stuff);
 };
 
 exports.createBook = (req,res,next) => {
-	console.log(req.body);
 	const bookObject = JSON.parse(req.body.book);
 	delete bookObject._id;
 	delete bookObject._userId;
@@ -66,19 +43,49 @@ exports.updateBook = (req,res,next) => {
 	Book.findOne({_id: req.params.id})
 		.then(book => {
 			if (book.userId != req.auth.userId) {
+				console.log("erreur userId");
 				res.status(401).json({message: "Action non autorisée."});
 				return;
 			}
+
+			if (req.file) {
+				const oldImageNameArray = book.imageUrl.split("/");
+				oldImagePath = `images/${oldImageNameArray[oldImageNameArray.length - 1]}`;
+				try {
+					fs.unlink(path.join(__dirname,`../${oldImagePath}`), (error) => {
+						if (error) {throw error;}
+					});
+				} catch (error) {
+					console.log(error);
+				}
+			}
+
 			Book.updateOne({_id: req.params.id}, {...bookObject, _id: req.params.id})
 				.then( () => res.status(200).json({message: "Livre modifié."}))
-				.catch( error => res.status(401).json({error}));
+				.catch( error => {
+					console.log(error);
+					res.status(401).json({error});
+				});
 
 		})
 		.catch(error => res.status(400).json({error}));
 };
 
 exports.deleteBook = (req,res, next) => {
-	Book.deleteOne({_id: req.params.id})
-		.then( () => res.status(200).json({message: "Livre supprimé."}))
-		.catch( error => res.status(400).json({error}));
+	Book.findOne({_id: req.params.id})
+		.then( book => {
+			if (book.userId != req.auth.userId) {
+				res.status(401).json({message: "Action non autorisée."});
+			} else {
+				const oldImageNameArray = book.imageUrl.split("/");
+				oldImagePath = `images/${oldImageNameArray[oldImageNameArray.length - 1]}`;
+				console.log(oldImagePath);
+				fs.unlink(path.join(__dirname,`../${oldImagePath}`), () => {
+					Book.deleteOne({_id: req.params.id})
+						.then( () => {res.status(200).json({message: "Livre supprimé."})})
+						.catch( error => {res.status(400).json({error})});
+				});
+			}
+		})
+		.catch( error => { res.status(500).json({error}); console.log(error);});
 };

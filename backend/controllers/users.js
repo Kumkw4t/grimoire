@@ -24,7 +24,7 @@ exports.login = (req,res,next) => {
 				.then(result => {
 					if (!result) {return res.status(401).json({message: "Login ou mot de passe erroné."});}
 					res.status(200).json({userId: user._id, 
-										token: jwt.sign({userId: user._id},'SECRET_CRYPT_KEY',{expiresIn: '1h' })});
+										token: jwt.sign({userId: user._id},'SECRET_CRYPT_KEY',{expiresIn: '24h' })});
 				})
 				.catch(error => res.status(500).json({error}));
 		})
