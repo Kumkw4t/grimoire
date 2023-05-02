@@ -89,3 +89,51 @@ exports.deleteBook = (req,res, next) => {
 		})
 		.catch( error => { res.status(500).json({error}); console.log(error);});
 };
+
+exports.getBestratedBooks = (req,res,next) => {
+	Book.find().sort({averageRating : -1}).limit(3)
+		.then( books => {
+			res.status(200).json(books);
+		})
+		.catch( error => { res.status(500).json({error}); console.log(error)});
+};
+
+exports.addRating = (req,res,next) => {
+
+	if (!Number.isInteger(req.body.rating) || req.body.rating > 5) {
+		res.status(400).json({message : "Notation impossible."});
+		return;
+	}
+
+	Book.findOne({_id: req.params.id})
+		.then( book => {
+			const bookRatings = book.ratings;
+			let totalRatings = 0;
+			for (const rating of bookRatings) {
+				if (rating.userId === req.auth.userId) {
+					console.log("coucou5");
+					res.status(400).json({message: "Notation impossible."});
+					return;
+				}
+				totalRatings += rating.grade;
+			}
+
+			const newAverage = Math.round((totalRatings + req.body.rating) / (book.ratings.length+1));
+			Book.findOneAndUpdate(
+				{_id: req.params.id},
+				{
+					$push: {ratings: {userId: req.auth.userId, grade: req.body.rating}},
+					averageRating: newAverage
+				},
+				{
+					returnDocument: "after"
+				})
+				.then( newBook => {
+					res.status(200).json(newBook);
+				})
+				.catch( error => { res.status(500).json({error}); console.log(error);});
+
+		})
+		.catch( error => { res.status(500).json({error}); console.log(error); });
+
+};
