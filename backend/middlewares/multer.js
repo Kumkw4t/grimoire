@@ -16,6 +16,12 @@ const validator = (req, file, callback) => {
 	if ( !parseInt(book.year,10) ) {
 		return callback(null, false);
 	}
+
+	const allowedTypes = /jpeg|jpg|png/;
+	if ( !allowedTypes.test(file.mimetype) ) {
+		return callback(null, false);
+	}
+	
 	callback(null, true);
 };
 
@@ -30,4 +36,8 @@ const storage = multer.diskStorage({
 	}
 });
 
-module.exports = multer({storage: storage, fileFilter: validator}).single("image");
+const limits = {
+	fileSize: 1024 * 1024
+}
+
+module.exports = multer({storage: storage, fileFilter: validator, limits: limits}).single("image");
