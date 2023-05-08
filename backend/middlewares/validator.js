@@ -12,6 +12,11 @@ function validator (req,res,next) {
 		return;
 	}
 
+	if (book.title.includes("$") || book.author.buf.includes("$") || book.genre.includes("$")){
+		res.status(400).json({message: "Formulaire invalide."});
+		return;
+	}
+
 	if ( !parseInt(book.year,10) ) {
 		res.status(400).json({message: "Formulaire invalide."});
 		console.log("L'année doit être un nombre");

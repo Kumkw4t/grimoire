@@ -13,6 +13,10 @@ const validator = (req, file, callback) => {
 		return callback(null, false);
 	}
 
+	if (book.title.includes("$") || book.author.buf.includes("$") || book.genre.includes("$")){
+		return callback(null,false);
+	}
+
 	if ( !parseInt(book.year,10) ) {
 		return callback(null, false);
 	}
@@ -38,6 +42,16 @@ const storage = multer.diskStorage({
 
 const limits = {
 	fileSize: 1024 * 1024
-}
+};
 
-module.exports = multer({storage: storage, fileFilter: validator, limits: limits}).single("image");
+const multerMiddleware = function (req, res, next) {
+	const upload = multer({storage: storage, fileFilter: validator, limits: limits}).single("image");
+	upload(req, res, function (error) {
+		if (error instanceof multer.MulterError) {
+			return res.status(400).json({message: "Fichier trop volumineux. Taille maximale : 1Mo."});
+		}
+		next();
+	});
+};
+
+module.exports = multerMiddleware;
