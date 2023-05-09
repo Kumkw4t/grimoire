@@ -4,8 +4,11 @@ const path = require("path");
 const booksRoutes = require("./routes/books");
 const usersRoutes = require("./routes/users");
 
+const dotenv = require("dotenv");
+dotenv.config();
+
 const app = express();
-mongoose.connect('mongodb+srv://mathrubbish:dp7SnkvsKiFnGtoS@cluster0.iefkegi.mongodb.net/?retryWrites=true&w=majority',
+mongoose.connect(`mongodb+srv://${process.env.USERNAME_DB}:${process.env.LINK_DB}/?retryWrites=true&w=majority`,
   { useNewUrlParser: true,
     useUnifiedTopology: true })
   .then(() => console.log('Connexion à MongoDB réussie !'))

@@ -8,25 +8,25 @@ const MIME_TYPES = {
 
 const validator = (req, file, callback) => {
 	const book = JSON.parse(req.body.book);
+	const allowedTypes = /jpeg|jpg|png|webp/;
 
 	if (!book.title || !book.author || !book.year || !book.genre) {
-		return callback(null, false);
+		callback(null, false);
 	}
 
-	if (book.title.includes("$") || book.author.buf.includes("$") || book.genre.includes("$")){
-		return callback(null,false);
+	else if (book.title.includes("$") || book.author.includes("$") || book.genre.includes("$")){
+		callback(null,false);
 	}
 
-	if ( !parseInt(book.year,10) ) {
-		return callback(null, false);
+	else if (!parseInt(book.year,10)) {
+		callback(null, false);
 	}
 
-	const allowedTypes = /jpeg|jpg|png/;
-	if ( !allowedTypes.test(file.mimetype) ) {
-		return callback(null, false);
+	else if ( !allowedTypes.test(file.mimetype) ) {
+		callback(null, false);
 	}
-	
-	callback(null, true);
+
+	else { callback(null, true); }
 };
 
 const storage = multer.diskStorage({

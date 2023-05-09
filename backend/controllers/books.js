@@ -79,7 +79,6 @@ exports.deleteBook = (req,res, next) => {
 			} else {
 				const oldImageNameArray = book.imageUrl.split("/");
 				oldImagePath = `images/${oldImageNameArray[oldImageNameArray.length - 1]}`;
-				console.log(oldImagePath);
 				fs.unlink(path.join(__dirname,`../${oldImagePath}`), () => {
 					Book.deleteOne({_id: req.params.id})
 						.then( () => {res.status(200).json({message: "Livre supprimé."})})
